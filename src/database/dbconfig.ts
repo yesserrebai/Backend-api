@@ -1,15 +1,16 @@
-import mongoose from 'mongoose'
-import dotenv from 'dotenv'
-dotenv.config();
+import mongoose from "mongoose";
+import dotenv from "dotenv"
+dotenv.config()
 
-const DBURI = process.env.DATABASE.replace('<PASSWORD>',process.env.DBPASSWORD);
-
-mongoose.connect(DBURI,{
+const dbUrl = process.env.DATABASE.replace('<PASSWORD>',process.env.DBPASSWORD)
+mongoose.connect(dbUrl, <MongoDBOptions>{
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
-.then(() => console.log("Connected to MongoDB "))
+.then(() => console.log(`Connected to MongoDB`))
 .catch((error: Error) => console.log(error.message));
 
-const DB = mongoose.connection;
-export = DB;
+const DB_CONNECTION = mongoose.connection
+
+export default DB_CONNECTION
+

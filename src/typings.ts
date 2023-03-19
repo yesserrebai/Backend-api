@@ -1,4 +1,4 @@
-export interface MongoDBOptions {
+interface MongoDBOptions {
     useNewUrlParser: boolean;
     useUnifiedTopology: boolean;
     user: string;
