@@ -1,7 +1,7 @@
 import User from "../models/user/userModel"
 import * as jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
-import { createAccessToken } from "./services"
+import { createAccessToken,resetPassword ,requestPasswordReset } from "./services"
 
 interface ID {
     id:string,
@@ -159,3 +159,19 @@ export const adminlogin = async(req:any,res:any)=>{
         })
     }
 }
+
+export const resetPasswordRequestController = async (req:any, res:any) => {
+    const requestPasswordResetService = await requestPasswordReset(
+      req.body.email
+    );
+    return res.json(requestPasswordResetService);
+  }
+
+export const resetPasswordController = async (req:any, res:any)=> {
+    const resetPasswordService = await resetPassword(
+      req.body.userId,
+      req.body.token,
+      req.body.password
+    );
+    return res.json(resetPasswordService);
+};
