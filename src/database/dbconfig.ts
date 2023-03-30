@@ -1,6 +1,16 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv"
+
 dotenv.config()
+
+interface MongoDBOptions {
+    useNewUrlParser: boolean;
+    useUnifiedTopology: boolean;
+    user: string;
+    pass: string;
+    dbName: string;
+  }
+
 
 const dbUrl = process.env.DATABASE.replace('<PASSWORD>',process.env.DBPASSWORD)
 mongoose.connect(dbUrl, <MongoDBOptions>{

@@ -1,7 +1,14 @@
-interface MongoDBOptions {
-    useNewUrlParser: boolean;
-    useUnifiedTopology: boolean;
-    user: string;
-    pass: string;
-    dbName: string;
-  }
+
+
+  export interface UserPayload{
+    id:string;
+    email:string;
+    role:string
+}
+
+export interface AuthenticatedRequest extends Request {
+  user: {
+    _id: string;
+    // add other user properties here
+  };
+}

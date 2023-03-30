@@ -1,8 +1,15 @@
 import * as jwt from "jsonwebtoken"
+import { UserPayload } from "../typings";
 
-export const createAccessToken = (id:string) =>{
-    return jwt.sign({id},process.env.SECRETKEY,
+export const createAccessToken = (payload: UserPayload) =>{
+    return jwt.sign({payload},process.env.SECRETKEY,
         {expiresIn : process.env.JWTEXPIRES_IN});
 };
+
+export const createRefreshToken = (payload: UserPayload) => {
+    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+      expiresIn: "30d",
+    });
+  };
 
 

@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import User from "../models/user/userModel"
 import * as jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
@@ -15,7 +16,7 @@ interface ID {
 
 
 
-export const register = async(req:any,res:any)=>{
+export const register = async(req:Request,res:Response)=>{
     try {
         const {
             email,
@@ -63,7 +64,7 @@ export const register = async(req:any,res:any)=>{
 
 }
 
-export const login = async(req:any,res:any)=>{
+export const login = async(req:Request,res:Response)=>{
     try {
     
     const { email,password } = req.body;
@@ -110,52 +111,4 @@ export const login = async(req:any,res:any)=>{
         })
     }
     
-}
-
-export const adminlogin = async(req:any,res:any)=>{
-     try {
-    const { email,password } = req.body;
-    const user = await User.findOne({email, usertype:"admin"}).select('+password');
-
-    if(!email || !password){
-        return res.status(400).json({
-            status: "error",
-            message: "Username and password can not be blank"
-            })
-    }
-
-    if(!user){
-        return res.status(400).json({
-            status: "error",
-            message: "Email or Password is incorrect"
-        })
-    }
-
-    const isMatch = await bcrypt.compare(password,user.password)
-    if(!isMatch){
-        return res.status(400).json({
-            status: "error",
-            message: "Email or Password is incorrect"
-        })
-    }
-
-    const access_token = createAccessToken({id:user._id})
-
-    res.status(200).json({
-        status: "success",
-        message: "You have been logged in as an Admin!",
-        ip: ip,
-        access_token,
-        user:{
-            ...user._doc,
-            password:""
-        }
-    })
-    } catch (err) {
-        console.log(err)
-        return res.status(500).json({
-            status: "unknown",
-            message: err.message
-        })
-    }
 }

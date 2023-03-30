@@ -6,7 +6,9 @@ import path from "path"
 import multer from "multer"
 import morgan from "morgan"
 import DB_CONNECTION from "./database/dbconfig";
-import UserRouter from "./routes/userroutes";
+import UserRouter from "./routes/Users";
+import router from "./routes/Admin";
+import indexRouter from './routes/index'
 const app = express();
 
 
@@ -31,12 +33,12 @@ DB_CONNECTION.on("error",(err)=>{
 
 /*Routes*/
 
-app.use("/",UserRouter)
-app.get("/",(req,res)=>{
-    res.send("Hello")
-})
+app.use('/',  indexRouter)
+app.use("/users", UserRouter)
+app.use("/admins", router)
 
-app.get('/favicon.ico', (req, res) => res.status(204));
+
+
 
 app.all('*',(req,res)=>{
     res.status(404).json({

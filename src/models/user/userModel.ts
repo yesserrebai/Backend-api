@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import validator from "validator"
-import User from "./user.interface";
+import { User } from "./user.interface";
 import bcrypt from "bcrypt"
 
 const userSchema = new mongoose.Schema({
@@ -21,12 +21,10 @@ const userSchema = new mongoose.Schema({
         select: false
     },
 
-    user:{
-        type:String,
-        // required: [true,"A username is required"],
-        trim: true,
-        maxlength: 25
-    },
+    role: {
+        type: String,
+        default: "user",
+      },
 
     firstname:{
         type:String,
@@ -76,8 +74,34 @@ const userSchema = new mongoose.Schema({
         type:String,
         default: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460__340.png",
     },
-
-},
+    saved: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: 'post'
+      }
+    ],
+    story: {
+      type: String,
+      default: "",
+      maxlength: 200,
+    },
+    website: {
+      type: String,
+      default: "",
+    },
+    followers: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "user",
+      },
+    ],
+    following: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "user",
+      },
+    ],
+  },
 {timestamps: true})
 
 userSchema.pre('save', async function(next){
@@ -94,6 +118,6 @@ userSchema.methods.correctPassword = async function(enteredPassword:string,userP
 }
 
 
-const User = mongoose.model<User>('users', userSchema);
+const User = mongoose.model<User>('user', userSchema);
 
 export default User;
