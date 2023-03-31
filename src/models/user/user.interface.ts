@@ -1,6 +1,6 @@
 import mongoose, { Document } from "mongoose";
 
-export interface User extends Document {
+export interface IUser extends Document {
     id: string;
     email: string;
     password: string;
@@ -23,5 +23,6 @@ export interface User extends Document {
     following: mongoose.Types.ObjectId[];
     createdAt?: Date;
     updatedAt?: Date;
+    [key: string]: any;
     correctPassword(enteredPassword: string, userPassword: string): Promise<boolean>;
   }

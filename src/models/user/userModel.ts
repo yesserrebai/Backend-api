@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import validator from "validator"
-import { User } from "./user.interface";
+import { IUser } from "./user.interface";
 import bcrypt from "bcrypt"
 
 const userSchema = new mongoose.Schema({
@@ -118,6 +118,6 @@ userSchema.methods.correctPassword = async function(enteredPassword:string,userP
 }
 
 
-const User = mongoose.model<User>('user', userSchema);
+const User = mongoose.model<IUser>('user', userSchema);
 
 export default User;

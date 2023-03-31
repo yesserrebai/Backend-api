@@ -8,7 +8,8 @@ import morgan from "morgan"
 import DB_CONNECTION from "./database/dbconfig";
 import UserRouter from "./routes/Users";
 import router from "./routes/Admin";
-import indexRouter from './routes/index'
+import indexRouter from './routes/index';
+import PostRouter from './routes/Post'
 const app = express();
 
 
@@ -36,6 +37,7 @@ DB_CONNECTION.on("error",(err)=>{
 app.use('/',  indexRouter)
 app.use("/users", UserRouter)
 app.use("/admins", router)
+app.use('/post', PostRouter)
 
 
 

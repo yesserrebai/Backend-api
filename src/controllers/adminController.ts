@@ -4,6 +4,7 @@ import bcrypt from "bcrypt"
 import { createAccessToken, createRefreshToken  } from "./services";
 import { Generatesignature, GenerateSalt, GeneratePassword } from "../utils/utility";
 import User from "../models/user/userModel";
+import {IUser} from "../models/user/user.interface"
 
 
 export const registerAdmin = async (req: Request, res: Response) => {
@@ -63,7 +64,7 @@ export const adminLogin = async (req: Request, res: Response): Promise<Response>
     try {
       const { email, password } = req.body;
   
-      const user = await User.findOne({ email, role: "admin" });
+      const user: IUser = await User.findOne({ email, role: "admin" });
   
       if (!user) {
         return res.status(400).json({ msg: "Email or Password is incorrect." });
@@ -73,9 +74,9 @@ export const adminLogin = async (req: Request, res: Response): Promise<Response>
       if (!isMatch) {
         return res.status(400).json({ msg: "Email or Password is incorrect." });
       }
-  
-      const access_token = createAccessToken({ id: user._id });
-      const refresh_token = createRefreshToken({ id: user._id });
+      const access_token = createAccessToken({ id: user._id, email: user.email, role: user.role });
+const refresh_token = createRefreshToken({ id: user._id, email: user.email, role: user.role });
+
   
       res.cookie("refreshtoken", refresh_token, {
         httpOnly: true,
