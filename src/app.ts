@@ -10,6 +10,7 @@ import UserRouter from "./routes/Users";
 import router from "./routes/Admin";
 import indexRouter from './routes/index';
 import PostRouter from './routes/Post'
+import CommentRouter from './routes/Comment'
 const app = express();
 
 
@@ -38,6 +39,7 @@ app.use('/',  indexRouter)
 app.use("/users", UserRouter)
 app.use("/admins", router)
 app.use('/post', PostRouter)
+app.use('/comment', CommentRouter)
 
 
 

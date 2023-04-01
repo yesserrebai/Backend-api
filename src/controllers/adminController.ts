@@ -4,6 +4,8 @@ import bcrypt from "bcrypt"
 import { createAccessToken, createRefreshToken  } from "./services";
 import { Generatesignature, GenerateSalt, GeneratePassword } from "../utils/utility";
 import User from "../models/user/userModel";
+import Post from "../models/post/postModel";
+import Comment from "../models/comments/commentModel";
 import {IUser} from "../models/user/user.interface"
 
 
@@ -91,6 +93,86 @@ const refresh_token = createRefreshToken({ id: user._id, email: user.email, role
         access_token,
         user: userWithoutPassword,
       });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  };
+
+  export const getTotalUsers = async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const users = await User.find();
+      const total_users = users.length;
+      return res.json({ total_users });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  };
+  
+  export const getTotalPosts = async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const posts = await Post.find();
+      const total_posts = posts.length;
+      return res.json({ total_posts });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  };
+  
+  export const getTotalComments = async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const comments = await Comment.find();
+      const total_comments = comments.length;
+      return res.json({ total_comments });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  };
+  
+  export const getTotalLikes = async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const posts = await Post.find();
+      let total_likes = 0;
+      await posts.map((post) => (total_likes += post.likes.length));
+      return res.json({ total_likes });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  };
+  
+  export const getTotalSpamPosts = async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const posts = await Post.find();
+      
+      const reportedPosts = await posts.filter(post => post.reports.length>2);
+      const total_spam_posts = reportedPosts.length;
+      return res.json({ total_spam_posts });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  };
+  
+  export const getSpamPosts = async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const posts = await Post.find()
+        .select("user createdAt reports content")
+        .populate({ path: "user", select: "username avatar email" });
+      const spamPosts = posts.filter((post) => post.reports.length > 1);
+      
+      return res.json({ spamPosts });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  };
+  
+  export const deleteSpamPost = async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const post = await Post.findOneAndDelete({
+        _id: req.params.id,
+      });
+  
+      await Comment.deleteMany({ _id: { $in: post.comments } });
+  
+      return res.json({ msg: "Post deleted successfully." });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
