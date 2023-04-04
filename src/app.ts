@@ -11,6 +11,8 @@ import router from "./routes/Admin";
 import indexRouter from './routes/index';
 import PostRouter from './routes/Post'
 import CommentRouter from './routes/Comment'
+import NotifyRouter from './routes/Notify'
+const SocketServer = require('./socketServer');
 const app = express();
 
 
@@ -40,8 +42,15 @@ app.use("/users", UserRouter)
 app.use("/admins", router)
 app.use('/post', PostRouter)
 app.use('/comment', CommentRouter)
+app.use('/notify', NotifyRouter)
+
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 
 
+io.on('connection', socket => {
+    SocketServer(socket);
+})
 
 
 app.all('*',(req,res)=>{
