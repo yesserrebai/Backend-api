@@ -93,20 +93,38 @@ export const register = async (req: Request, res: Response) => {
         .json({ message: "The email is already registerd" });
     }
 
-    const registerUser = await User.create(req.body);
+    // Generate salt for password hashing
+    const salt = await bcrypt.genSalt(10);
+    // Hash the password with the salt
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create a new user in the database with the hashed password
+    const registerUser = await User.create({
+      email,
+      password: hashedPassword,
+      user,
+      firstname,
+      lastname,
+      gender,
+      usertype,
+      country,
+      city,
+      postalcode,
+      language,
+      dateofbirth,
+    });
     const access_token = createAccessToken({
       id: registerUser._id.toString(),
       email: registerUser.email,
       role: registerUser.role,
     });
-
+    delete registerUser._doc["password"];
     res.status(200).json({
       status: "success",
       message: "Registration Successfully",
       access_token,
       user: {
         ...registerUser._doc,
-        password: "",
       },
     });
   } catch (err) {
