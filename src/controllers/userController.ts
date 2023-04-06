@@ -3,6 +3,25 @@ import User from "../models/user/userModel";
 import * as jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { createAccessToken } from "./services";
+import Joi from "joi";
+import countries from "i18n-iso-countries";
+
+const isValidCountry = (
+  value: any,
+  helpers: { error: (arg0: string) => any }
+) => {
+  if (!value || typeof value !== "string") {
+    return helpers.error("any.invalid");
+  }
+
+  const countryCode = countries.getAlpha2Code(value, "en");
+
+  if (!countryCode) {
+    return helpers.error("any.invalid");
+  }
+
+  return countryCode;
+};
 
 interface ID {
   id: string;
@@ -13,6 +32,20 @@ interface ID {
   email: string;
   password: string;
 }
+const registrationSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(8).required(),
+  user: Joi.string().required(),
+  firstname: Joi.string().required(),
+  lastname: Joi.string().required(),
+  gender: Joi.string().valid("male", "female", "other").required(),
+  usertype: Joi.string().valid("admin", "user").required(),
+  country: Joi.string().custom(isValidCountry).required(),
+  city: Joi.string().required(),
+  postalcode: Joi.string().required(),
+  language: Joi.string().valid("EN", "FR", "IT").required(),
+  dateofbirth: Joi.date().required(),
+});
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -30,6 +63,27 @@ export const register = async (req: Request, res: Response) => {
       language,
       dateofbirth,
     } = req.body;
+
+    const { error } = registrationSchema.validate({
+      email,
+      password,
+      user,
+      firstname,
+      lastname,
+      gender,
+      usertype,
+      country,
+      city,
+      postalcode,
+      language,
+      dateofbirth,
+    });
+    if (error && error.details) {
+      return res.status(400).json({
+        status: "failed",
+        message: error.details[0].message,
+      });
+    }
 
     //Check to see if email exist in the databse
     const user_email = await User.findOne({ email });
