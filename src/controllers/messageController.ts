@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import Conversations, {
-  IConversation,
-} from "../models/Conversation/conversatonModel";
+import Conversations, { IConversation } from "../models/Conversation/conversatonModel";
 import Messages, { IMessage } from "../models/message/messageModel";
 
 class APIfeatures {
@@ -28,46 +26,35 @@ interface IMessageRequest extends Request {
 }
 
 interface IMessageResponse extends Response {
-  json: (body?: any) => this;
+  json: (body?: any) => IMessageResponse;
 }
 
 interface IMessageCtrl {
-  createMessage: (
-    req: IMessageRequest,
-    res: IMessageResponse
-  ) => Promise<IMessageResponse>;
-  getConversations: (
-    req: IMessageRequest,
-    res: IMessageResponse
-  ) => Promise<IMessageResponse>;
-  getMessages: (
-    req: IMessageRequest,
-    res: IMessageResponse
-  ) => Promise<IMessageResponse>;
+  createMessage: (req: IMessageRequest, res: IMessageResponse) => Promise<IMessageResponse>;
+  getConversations: (req: IMessageRequest, res: IMessageResponse) => Promise<IMessageResponse>;
+  getMessages: (req: IMessageRequest, res: IMessageResponse) => Promise<IMessageResponse>;
 }
 
 const messageCtrl: IMessageCtrl = {
   createMessage: async (req: IMessageRequest, res: IMessageResponse) => {
     try {
       const { recipient, text, media } = req.body;
-      if (!recipient || (!text.trim() && media.length === 0))
-        return res.json({ msg: "Nothing to send." });
+      if (!recipient || (!text.trim() && media.length === 0)) return res.json({ msg: "Nothing to send." });
 
-      const newConversation: IConversation =
-        await Conversations.findOneAndUpdate(
-          {
-            $or: [
-              { recipients: [req.user._id, recipient] },
-              { recipients: [recipient, req.user._id] },
-            ],
-          },
-          {
-            recipients: [req.user._id, recipient],
-            text,
-            media,
-          },
-          { new: true, upsert: true }
-        );
+      const newConversation: IConversation = await Conversations.findOneAndUpdate(
+        {
+          $or: [
+            { recipients: [req.user._id, recipient] },
+            { recipients: [recipient, req.user._id] },
+          ],
+        },
+        {
+          recipients: [req.user._id, recipient],
+          text,
+          media,
+        },
+        { new: true, upsert: true }
+      );
 
       const newMessage: IMessage = new Messages({
         conversation: newConversation._id,
