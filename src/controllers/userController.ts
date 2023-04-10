@@ -6,6 +6,10 @@ import { createAccessToken } from "./services";
 import Joi from "joi";
 import countries from "i18n-iso-countries";
 
+// for now will keep it like this
+interface CustomRequest extends Request {
+  user?: any;
+}
 const isValidCountry = (
   value: any,
   helpers: { error: (arg0: string) => any }
@@ -36,7 +40,6 @@ interface ID {
 const registrationSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required(),
-  user: Joi.string().required(),
   firstname: Joi.string().required(),
   lastname: Joi.string().required(),
   gender: Joi.string().valid("male", "female", "other").required(),
@@ -47,13 +50,24 @@ const registrationSchema = Joi.object({
   language: Joi.string().valid("EN", "FR", "IT").required(),
   dateofbirth: Joi.date().required(),
 });
+const updateUserSchema = Joi.object({
+  password: Joi.string().min(8),
+  firstname: Joi.string(),
+  lastname: Joi.string(),
+  gender: Joi.string().valid("male", "female", "other"),
+  usertype: Joi.string().valid("admin", "user"),
+  country: Joi.string().custom(isValidCountry),
+  city: Joi.string(),
+  postalcode: Joi.string(),
+  language: Joi.string().valid("EN", "FR", "IT"),
+  dateofbirth: Joi.date(),
+});
 
 export const register = async (req: Request, res: Response) => {
   try {
     const {
       email,
       password,
-      user,
       firstname,
       lastname,
       gender,
@@ -68,7 +82,6 @@ export const register = async (req: Request, res: Response) => {
     const { error } = registrationSchema.validate({
       email,
       password,
-      user,
       firstname,
       lastname,
       gender,
@@ -103,7 +116,6 @@ export const register = async (req: Request, res: Response) => {
     const registerUser = await User.create({
       email,
       password: hashedPassword,
-      user,
       firstname,
       lastname,
       gender,
@@ -140,10 +152,8 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email, usertype: "user" }).select(
-      "+password"
-    );
 
+    const user = await User.findOne({ email: email }).select("+password");
     if (!email || !password) {
       return res.status(400).json({
         status: "error",
@@ -157,20 +167,19 @@ export const login = async (req: Request, res: Response) => {
         message: "Email or Password is incorrect",
       });
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password.trim(), user.password);
     if (!isMatch) {
       return res.status(400).json({
         status: "error",
         message: "Email or Password is incorrect",
       });
     }
-
     const access_token = createAccessToken({
       id: user._id.toString(),
       email: user.email,
       role: user.role,
     });
+    console.log(access_token);
 
     res.status(200).json({
       status: "success",
@@ -182,10 +191,58 @@ export const login = async (req: Request, res: Response) => {
       },
     });
   } catch (err) {
-    console.log(err);
+    // console.log("hshhshshs", err);
     return res.status(500).json({
       status: "unknown",
       message: err.message,
+    });
+  }
+};
+export const updateUser = async (req: CustomRequest, res: Response) => {
+  try {
+    const {
+      password,
+      firstname,
+      lastname,
+      gender,
+      usertype,
+      country,
+      city,
+      postalcode,
+      language,
+      dateofbirth,
+    } = req.body;
+
+    const { error } = updateUserSchema.validate({
+      password,
+      firstname,
+      lastname,
+      gender,
+      usertype,
+      country,
+      city,
+      postalcode,
+      language,
+      dateofbirth,
+    });
+    if (error && error.details) {
+      return res.status(400).json({
+        status: "failed",
+        message: error.details[0].message,
+      });
+    }
+
+    const authenticatedUser = req.user;
+    const result = await User.findByIdAndUpdate(
+      authenticatedUser._id,
+      req.body
+    );
+    return res.status(200).send({ status: "success", message: result });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: "unknown",
+      message: error.message,
     });
   }
 };
