@@ -7,16 +7,12 @@ const userSchema = new mongoose.Schema(
   {
     email: {
       type: String,
-      // required: [true,"An email is required"],
       trim: true,
       unique: true,
       lowercase: true,
-      validate: [validator.isEmail, "Please provide a valid email"],
     },
     password: {
       type: String,
-      // required: [true,"A password is required"],
-      // minlength:8,
       select: false,
     },
 
@@ -27,13 +23,11 @@ const userSchema = new mongoose.Schema(
 
     firstname: {
       type: String,
-      // required: [true,"A first name is required"],
       trim: true,
       maxlength: 25,
     },
     lastname: {
       type: String,
-      // required: [true,"A last name is required"],
       trim: true,
       maxlength: 25,
     },
