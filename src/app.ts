@@ -8,11 +8,11 @@ import morgan from "morgan";
 import DB_CONNECTION from "./database/dbconfig";
 import UserRouter from "./routes/Users";
 import router from "./routes/Admin";
-import indexRouter from "./routes/index";
+import indexRouter from "./routes/Index";
 import PostRouter from "./routes/Post";
 import CommentRouter from "./routes/Comment";
 import NotifyRouter from "./routes/Notify";
-const SocketServer = require("./socketServer");
+import SocketServer from "./socketServer";
 const app = express();
 
 /*Configurations */
