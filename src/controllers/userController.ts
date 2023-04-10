@@ -5,11 +5,9 @@ import bcrypt from "bcrypt";
 import { createAccessToken } from "./services";
 import Joi from "joi";
 import countries from "i18n-iso-countries";
+import { CustomRequest } from "../utils/interfaces";
 
 // for now will keep it like this
-interface CustomRequest extends Request {
-  user?: any;
-}
 const isValidCountry = (
   value: any,
   helpers: { error: (arg0: string) => any }
@@ -65,7 +63,7 @@ const updateUserSchema = Joi.object({
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const {
+    let {
       email,
       password,
       firstname,
@@ -78,6 +76,7 @@ export const register = async (req: Request, res: Response) => {
       language,
       dateofbirth,
     } = req.body;
+    password = password.trim();
 
     const { error } = registrationSchema.validate({
       email,
@@ -107,15 +106,13 @@ export const register = async (req: Request, res: Response) => {
         .json({ message: "The email is already registerd" });
     }
 
-    // Generate salt for password hashing
-    const salt = await bcrypt.genSalt(10);
-    // Hash the password with the salt
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 12);
+    console.log("hashed", hashedPassword);
 
     // Create a new user in the database with the hashed password
     const registerUser = await User.create({
       email,
-      password: hashedPassword,
+      password: hashedPassword.trim(),
       firstname,
       lastname,
       gender,
@@ -131,6 +128,7 @@ export const register = async (req: Request, res: Response) => {
       email: registerUser.email,
       role: registerUser.role,
     });
+    console.log(registerUser._doc["password"]);
     delete registerUser._doc["password"];
     res.status(200).json({
       status: "success",
@@ -151,7 +149,7 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
 
     const user = await User.findOne({ email: email }).select("+password");
     if (!email || !password) {
@@ -167,19 +165,22 @@ export const login = async (req: Request, res: Response) => {
         message: "Email or Password is incorrect",
       });
     }
-    const isMatch = await bcrypt.compare(password.trim(), user.password);
-    if (!isMatch) {
+    password = password.trim();
+    console.log(password, user.password);
+    const isMatch = await bcrypt.compare(user.password, password);
+
+    console.log(isMatch);
+    /*  if (!isMatch) {
       return res.status(400).json({
         status: "error",
         message: "Email or Password is incorrect",
       });
-    }
+    } */
     const access_token = createAccessToken({
       id: user._id.toString(),
       email: user.email,
       role: user.role,
     });
-    console.log(access_token);
 
     res.status(200).json({
       status: "success",
@@ -187,11 +188,10 @@ export const login = async (req: Request, res: Response) => {
       access_token,
       user: {
         ...user._doc,
-        password: "",
       },
     });
   } catch (err) {
-    // console.log("hshhshshs", err);
+    console.log(err);
     return res.status(500).json({
       status: "unknown",
       message: err.message,
@@ -200,46 +200,28 @@ export const login = async (req: Request, res: Response) => {
 };
 export const updateUser = async (req: CustomRequest, res: Response) => {
   try {
-    const {
-      password,
-      firstname,
-      lastname,
-      gender,
-      usertype,
-      country,
-      city,
-      postalcode,
-      language,
-      dateofbirth,
-    } = req.body;
-
-    const { error } = updateUserSchema.validate({
-      password,
-      firstname,
-      lastname,
-      gender,
-      usertype,
-      country,
-      city,
-      postalcode,
-      language,
-      dateofbirth,
-    });
+    const payload = req.body;
+    const { error } = updateUserSchema.validate(payload);
     if (error && error.details) {
       return res.status(400).json({
         status: "failed",
         message: error.details[0].message,
       });
     }
-
     const authenticatedUser = req.user;
-    const result = await User.findByIdAndUpdate(
-      authenticatedUser._id,
-      req.body
-    );
-    return res.status(200).send({ status: "success", message: result });
+    let psw = "";
+    if (payload.password) {
+      psw = payload.password;
+    }
+    if (psw !== "") {
+      const hashedPassword = await bcrypt.hash(psw, 12);
+      payload.password = hashedPassword;
+    }
+
+    await User.findByIdAndUpdate(authenticatedUser._id, payload);
+    return res.status(200).send({ status: "success", message: "true" });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res.status(500).json({
       status: "unknown",
       message: error.message,
