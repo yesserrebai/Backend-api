@@ -106,13 +106,13 @@ export const register = async (req: Request, res: Response) => {
         .json({ message: "The email is already registerd" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
-    console.log("hashed", hashedPassword);
+    password = await bcrypt.hash(password, 12);
+    console.log("hashed", password);
 
     // Create a new user in the database with the hashed password
     const registerUser = await User.create({
       email,
-      password: hashedPassword.trim(),
+      password,
       firstname,
       lastname,
       gender,
@@ -158,7 +158,7 @@ export const login = async (req: Request, res: Response) => {
         message: "Username and password can not be blank",
       });
     }
-
+    console.log(user);
     if (!user) {
       return res.status(400).json({
         status: "error",
@@ -166,16 +166,13 @@ export const login = async (req: Request, res: Response) => {
       });
     }
     password = password.trim();
-    console.log(password, user.password);
-    const isMatch = await bcrypt.compare(user.password, password);
-
-    console.log(isMatch);
-    /*  if (!isMatch) {
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(400).json({
         status: "error",
         message: "Email or Password is incorrect",
       });
-    } */
+    }
     const access_token = createAccessToken({
       id: user._id.toString(),
       email: user.email,
@@ -214,14 +211,11 @@ export const updateUser = async (req: CustomRequest, res: Response) => {
       psw = payload.password;
     }
     if (psw !== "") {
-      const hashedPassword = await bcrypt.hash(psw, 12);
-      payload.password = hashedPassword;
+      payload.password = await bcrypt.hash(psw, 12);
     }
-
     await User.findByIdAndUpdate(authenticatedUser._id, payload);
     return res.status(200).send({ status: "success", message: "true" });
   } catch (error) {
-    // console.log(error);
     return res.status(500).json({
       status: "unknown",
       message: error.message,
