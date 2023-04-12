@@ -5,7 +5,9 @@ import bcrypt from "bcrypt";
 import { createAccessToken } from "./services";
 import Joi from "joi";
 import countries from "i18n-iso-countries";
+import { CustomRequest } from "../utils/interfaces";
 
+// for now will keep it like this
 const isValidCountry = (
   value: any,
   helpers: { error: (arg0: string) => any }
@@ -36,7 +38,6 @@ interface ID {
 const registrationSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required(),
-  user: Joi.string().required(),
   firstname: Joi.string().required(),
   lastname: Joi.string().required(),
   gender: Joi.string().valid("male", "female", "other").required(),
@@ -47,13 +48,24 @@ const registrationSchema = Joi.object({
   language: Joi.string().valid("EN", "FR", "IT").required(),
   dateofbirth: Joi.date().required(),
 });
+const updateUserSchema = Joi.object({
+  password: Joi.string().min(8),
+  firstname: Joi.string(),
+  lastname: Joi.string(),
+  gender: Joi.string().valid("male", "female", "other"),
+  usertype: Joi.string().valid("admin", "user"),
+  country: Joi.string().custom(isValidCountry),
+  city: Joi.string(),
+  postalcode: Joi.string(),
+  language: Joi.string().valid("EN", "FR", "IT"),
+  dateofbirth: Joi.date(),
+});
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const {
+    let {
       email,
       password,
-      user,
       firstname,
       lastname,
       gender,
@@ -64,11 +76,11 @@ export const register = async (req: Request, res: Response) => {
       language,
       dateofbirth,
     } = req.body;
+    password = password.trim();
 
     const { error } = registrationSchema.validate({
       email,
       password,
-      user,
       firstname,
       lastname,
       gender,
@@ -94,16 +106,13 @@ export const register = async (req: Request, res: Response) => {
         .json({ message: "The email is already registerd" });
     }
 
-    // Generate salt for password hashing
-    const salt = await bcrypt.genSalt(10);
-    // Hash the password with the salt
-    const hashedPassword = await bcrypt.hash(password, salt);
+    password = await bcrypt.hash(password, 12);
+    console.log("hashed", password);
 
     // Create a new user in the database with the hashed password
     const registerUser = await User.create({
       email,
-      password: hashedPassword,
-      user,
+      password,
       firstname,
       lastname,
       gender,
@@ -119,6 +128,7 @@ export const register = async (req: Request, res: Response) => {
       email: registerUser.email,
       role: registerUser.role,
     });
+    console.log(registerUser._doc["password"]);
     delete registerUser._doc["password"];
     res.status(200).json({
       status: "success",
@@ -139,25 +149,23 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email, usertype: "user" }).select(
-      "+password"
-    );
+    let { email, password } = req.body;
 
+    const user = await User.findOne({ email: email }).select("+password");
     if (!email || !password) {
       return res.status(400).json({
         status: "error",
         message: "Username and password can not be blank",
       });
     }
-
+    console.log(user);
     if (!user) {
       return res.status(400).json({
         status: "error",
         message: "Email or Password is incorrect",
       });
     }
-
+    password = password.trim();
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({
@@ -165,7 +173,6 @@ export const login = async (req: Request, res: Response) => {
         message: "Email or Password is incorrect",
       });
     }
-
     const access_token = createAccessToken({
       id: user._id.toString(),
       email: user.email,
@@ -178,7 +185,6 @@ export const login = async (req: Request, res: Response) => {
       access_token,
       user: {
         ...user._doc,
-        password: "",
       },
     });
   } catch (err) {
@@ -186,6 +192,33 @@ export const login = async (req: Request, res: Response) => {
     return res.status(500).json({
       status: "unknown",
       message: err.message,
+    });
+  }
+};
+export const updateUser = async (req: CustomRequest, res: Response) => {
+  try {
+    const payload = req.body;
+    const { error } = updateUserSchema.validate(payload);
+    if (error && error.details) {
+      return res.status(400).json({
+        status: "failed",
+        message: error.details[0].message,
+      });
+    }
+    const authenticatedUser = req.user;
+    let psw = "";
+    if (payload.password) {
+      psw = payload.password;
+    }
+    if (psw !== "") {
+      payload.password = await bcrypt.hash(psw, 12);
+    }
+    await User.findByIdAndUpdate(authenticatedUser._id, payload);
+    return res.status(200).send({ status: "success", message: "true" });
+  } catch (error) {
+    return res.status(500).json({
+      status: "unknown",
+      message: error.message,
     });
   }
 };
