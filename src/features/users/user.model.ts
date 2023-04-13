@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import IUser from './user.interface';
 
 const UserSchema = new mongoose.Schema({
   email: {
@@ -14,7 +15,6 @@ const UserSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    default: 'user',
   },
 
   firstname: {
@@ -29,11 +29,6 @@ const UserSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    default: 'unknown',
-  },
-  usertype: {
-    type: String,
-    default: 'user',
   },
   country: {
     type: String,
@@ -51,7 +46,6 @@ const UserSchema = new mongoose.Schema({
 
   language: {
     type: String,
-    default: 'EN',
   },
   dateofbirth: {
     type: Date,
