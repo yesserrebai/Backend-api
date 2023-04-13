@@ -3,19 +3,16 @@ import RegisterUserDto from './dtos/registerUser.dto';
 import UserModel from './user.model';
 
 export default class UserService {
+  // this function will return access token also
   static registerUser = async (
     registerUser: RegisterUserDto,
   ): Promise<Object> => {
     try {
-      const user = await UserModel.create(registerUser);
-      return user;
+      const user = new UserModel(registerUser);
+      const savedUser = await user.save();
+      return savedUser;
     } catch (error) {
-      return Promise.reject(
-        new HttpException(
-          500,
-          JSON.stringify({ message: 'something went wrong' }),
-        ),
-      );
+      throw new HttpException(500, 'Something went wrong');
     }
   };
 }
