@@ -8,8 +8,8 @@
 
 # Branch naming
 
- For implementing features name your branch feature/name of your feature 
-  example i'm implementing register user feature i would name my branch feature/register-user
+ For implementing features name your branch feature/name 
+  example: i'm implementing register user feature i would name my branch feature/register-user
 
  for fixing bugs on register-user feature, i would create new branch and name it fix/register-user
 
