@@ -1,11 +1,7 @@
-# This is the backend API for Bee Keeping Project
+# This is the project structure
 
 # To Run the code clone the repository
 
-# npm Install
-
-# Add a env file 
-
-# npm run compile
+# yarn add NOT npm install !
 
 # npm run start

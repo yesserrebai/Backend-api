@@ -1,0 +1,12 @@
+{
+  "db": {
+    "port": "27017",
+    "host": "cluster0.mjhrdua.mongodb.net",
+    "name": "beekeeping-db",
+    "user": "tywaynebuchanan",
+    "password": "lBe76QbSgs6Vz8W3"
+  },
+  "server": {
+    "port": "8084"
+  }
+}
