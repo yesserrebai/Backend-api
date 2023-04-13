@@ -4,4 +4,4 @@
 
 # yarn add NOT npm install !
 
-# npm run start
+# npm start
