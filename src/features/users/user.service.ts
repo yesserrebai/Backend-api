@@ -7,12 +7,12 @@ export default class UserService {
   static registerUser = async (
     registerUser: RegisterUserDto,
   ): Promise<Object> => {
-    try {
-      const user = new UserModel(registerUser);
-      const savedUser = await user.save();
-      return savedUser;
-    } catch (error) {
-      throw new HttpException(500, 'Something went wrong');
+    let isEmailUsed = await UserModel.findOne({ email: registerUser.email });
+    if (isEmailUsed) {
+      throw new HttpException(400, 'email already exists');
     }
+    const user = new UserModel(registerUser);
+    const savedUser = await user.save();
+    return savedUser;
   };
 }
