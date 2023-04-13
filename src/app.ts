@@ -8,7 +8,7 @@ import errorHandler from './middlewares/errorHandler';
 const app = express();
 app.use(bodyParser.json());
 
-app.use(cors);
+app.use(cors());
 app.get('/ping', (_req, res) => {
   res.send('pong');
 });
