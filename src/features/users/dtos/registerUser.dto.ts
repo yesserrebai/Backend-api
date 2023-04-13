@@ -12,6 +12,7 @@ import {
   isMobilePhone,
 } from 'class-validator';
 import { role, gender, language } from '../user.enum';
+import { Transform, TransformFnParams } from 'class-transformer';
 export default class RegisterUserDto {
   @IsNotEmpty()
   @IsString()
@@ -67,6 +68,7 @@ export default class RegisterUserDto {
   language: string;
 
   @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => new Date(value))
   @IsDate()
   dateofbirth: Date;
 
