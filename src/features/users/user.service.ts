@@ -55,6 +55,8 @@ export default class UserService {
     if (!passwordMatch) {
       throw new HttpException(401, 'Invalid email or password');
     }
+    user.password = '';
+
     const token: string = generateAccessToken(user._id.toString());
     const result = {
       user: user,
