@@ -2,7 +2,7 @@ import mongoose, { Document } from 'mongoose';
 
 export default interface IUser extends Document {
   email: string;
-  password: string;
+  password?: string;
   role: string;
   firstname: string;
   lastname: string;
@@ -14,9 +14,4 @@ export default interface IUser extends Document {
   language: string;
   dateofbirth: Date;
   avatar: string;
-  saved: mongoose.Types.ObjectId[];
-  story: string;
-  website: string;
-  followers: mongoose.Types.ObjectId[];
-  following: mongoose.Types.ObjectId[];
 }

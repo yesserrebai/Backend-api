@@ -5,7 +5,7 @@ const URL_PREFIX = '/api/v1';
 export default (app: Express): void => {
   const controllers: Controller[] = [new UserController()];
 
-  controllers.forEach((controller) => {
+  controllers.forEach(controller => {
     app.use(URL_PREFIX + controller.path, controller.route);
   });
 };

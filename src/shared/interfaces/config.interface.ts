@@ -5,3 +5,6 @@ export interface DBConfig {
   user: string;
   password: string;
 }
+export interface SecretConfig {
+  privateKey: string;
+}
