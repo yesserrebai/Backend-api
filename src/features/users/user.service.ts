@@ -5,9 +5,9 @@ import bcrypt from 'bcrypt';
 import { generateAccessToken } from '../../shared/auth';
 import { AuthenticatedUser } from '../../shared/types';
 import IUser from './user.interface';
+import LoginUserDto from './dtos/loginUser.dto';
 
 export default class UserService {
-  // this function will return access token also
   static registerUser = async (
     registerUser: RegisterUserDto,
   ): Promise<AuthenticatedUser<IUser>> => {
@@ -32,6 +32,32 @@ export default class UserService {
     const token: string = generateAccessToken(fetchUser?._id.toString());
     const result = {
       user: fetchUser,
+      accessToken: token,
+    };
+    return result;
+  };
+
+  static loginUser = async (
+    loginCred: LoginUserDto,
+  ): Promise<AuthenticatedUser<IUser>> => {
+    let fetchedUser = await UserModel.findOne({
+      email: loginCred.email,
+    }).select('+password');
+    if (!fetchedUser) {
+      throw new HttpException(401, 'Invalid email or password');
+    }
+    let user: IUser = fetchedUser;
+    let passwordMatch: Boolean = false;
+    if (user.password) {
+      passwordMatch = await bcrypt.compare(loginCred.password, user.password);
+    }
+
+    if (!passwordMatch) {
+      throw new HttpException(401, 'Invalid email or password');
+    }
+    const token: string = generateAccessToken(user._id.toString());
+    const result = {
+      user: user,
       accessToken: token,
     };
     return result;
