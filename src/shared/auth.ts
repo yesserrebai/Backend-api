@@ -4,7 +4,7 @@ import { SecretConfig } from '../shared/interfaces/config.interface';
 
 export function generateAccessToken(id: string): string {
   const secret: SecretConfig = config.get('auth');
-  // token expire in one hour
+  // token expires in one hour
   let exp = Math.floor(Date.now() / 1000) + 60 * 60;
   let iat = Math.floor(Date.now() / 1000);
   let payload = {

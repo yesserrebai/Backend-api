@@ -6,6 +6,7 @@ import { generateAccessToken } from '../../shared/auth';
 import { AuthenticatedUser } from '../../shared/types';
 import IUser from './user.interface';
 import LoginUserDto from './dtos/loginUser.dto';
+import UpdateUserDto from './dtos/updateUser.dto';
 
 export default class UserService {
   static registerUser = async (
@@ -64,4 +65,7 @@ export default class UserService {
     };
     return result;
   };
+  /* static updateUser = async (payload:UpdateUserDto):Promise<IUser> => {
+
+  }; */
 }

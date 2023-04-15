@@ -8,7 +8,6 @@ import {
   IsEnum,
   isISO31661Alpha2,
   Validate,
-  IsMobilePhone,
   isMobilePhone,
 } from 'class-validator';
 import { role, gender, language } from '../user.enum';
@@ -57,7 +56,6 @@ export default class RegisterUserDto {
   @IsString()
   postalcode: string;
 
-  @IsOptional()
   @Validate(isMobilePhone, { message: 'Invalid phone number' })
   @IsString()
   phonenumber: string;
